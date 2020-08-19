@@ -152,7 +152,7 @@ while True:
     elif len(cmd)>0 and cmd[0]=='!':
         cmds=cmd.split(" ")
         if cmd=='!ls':
-            print(tabulate([(k,*jobs[k].shortsummary()) for k in jobs], tablefmt="pretty",
+            print(tabulate([(k,*jobs[k].shortsummary()) for k in jobs], tablefmt="grid",
                 headers=["ID","status","pwd", "command","create","run","finished"]))
         elif cmds[0]=='!k':
             if len(cmds)==2 and cmds[1].isdigit():
