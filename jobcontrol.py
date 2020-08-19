@@ -68,12 +68,12 @@ class trabajo:
         self.status=0 #0: pending, 1: running, 2: finished
         self.statustext=["-","+","#","X"]
         self.proc=None
-        self.createtime=strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        self.createtime=strftime("%Y-%m-%d\n%H:%M:%S", gmtime())
         self.runtime=""
         self.finishtime=""
     def run(self):
         if self.status==0:
-            self.runtime=strftime("%Y-%m-%d %H:%M:%S", gmtime())
+            self.runtime=strftime("%Y-%m-%d\n%H:%M:%S", gmtime())
             self.status+=1
             self.proc = subprocess.Popen(self.cmd, shell=True,
                 stdout = subprocess.PIPE,stderr = subprocess.STDOUT, cwd=self.pwd)
@@ -82,7 +82,7 @@ class trabajo:
             for line in self.proc.stdout:
                 self.stdout+=line
             self.proc.wait()
-            self.finishtime=strftime("%Y-%m-%d %H:%M:%S", gmtime())
+            self.finishtime=strftime("%Y-%m-%d\n%H:%M:%S", gmtime())
             self.status+=1
             with sqlite3.connect(logdbpath) as con:
                 con.execute('insert into jobs(status, cwd, cmd, create_t, run_t, finish_t, stdout) values(?,?,?,?,?,?,?)', 
@@ -95,7 +95,7 @@ class trabajo:
         return (self.statustext[self.status], self.pwd, self.cmd, self.createtime, self.runtime, self.finishtime, self.stdout)
     def shortsummary(self, maxlen=40):
         shortcmd="\n".join(chunks(self.cmd, maxlen))
-        shortpwd="\n".join(chunks(self.pwd, maxlen))
+        shortpwd="\n".join(chunks(self.pwd, int(maxlen/2)))
         return (self.statustext[self.status], shortpwd, shortcmd, self.createtime, self.runtime, self.finishtime)
     def kill(self):
         if self.proc is not None:
