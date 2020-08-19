@@ -41,7 +41,8 @@ def chunks(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
-con=sqlite3.connect("log.db")
+logdbpath=os.path.join(os.getcwd(), "log.db")
+con=sqlite3.connect(logdbpath)
 con.execute("create table if not exists jobs (id INTEGER PRIMARY KEY AUTOINCREMENT, status text,\
      cwd text, cmd text, create_t text, run_t text, finish_t text, stdout text)")
 cur=con.execute('select max(id) from jobs')
@@ -83,7 +84,7 @@ class trabajo:
             self.proc.wait()
             self.finishtime=strftime("%Y-%m-%d %H:%M:%S", gmtime())
             self.status+=1
-            with sqlite3.connect('log.db') as con:
+            with sqlite3.connect(logdbpath) as con:
                 con.execute('insert into jobs(status, cwd, cmd, create_t, run_t, finish_t, stdout) values(?,?,?,?,?,?,?)', 
                     self.summary())
     def showstdout(self):
