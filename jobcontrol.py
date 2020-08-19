@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import subprocess, os, sys
 import threading
 from tabulate import tabulate
