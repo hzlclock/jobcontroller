@@ -41,7 +41,8 @@ def chunks(lst, n):
         yield lst[i:i + n]
 
 con=sqlite3.connect("log.db")
-con.execute("create table if not exists jobs (id INTEGER PRIMARY KEY AUTOINCREMENT, status text, cmd text, create_t text, run_t text, finish_t text)")
+con.execute("create table if not exists jobs (id INTEGER PRIMARY KEY AUTOINCREMENT, status text,\
+     cwd text, cmd text, create_t text, run_t text, finish_t text, stdout text)")
 cur=con.execute('select max(id) from jobs')
 jobs=cur.fetchall()
 con.close()
@@ -82,17 +83,18 @@ class trabajo:
             self.finishtime=strftime("%Y-%m-%d %H:%M:%S", gmtime())
             self.status+=1
             with sqlite3.connect('log.db') as con:
-                con.execute('insert into jobs(status, cmd, create_t, run_t, finish_t) values(?,?,?,?,?)', 
+                con.execute('insert into jobs(status, cwd, cmd, create_t, run_t, finish_t, stdout) values(?,?,?,?,?,?,?)', 
                     self.summary())
     def showstdout(self):
         subprocess.run('vim -c "Less" -u /tmp/.vimrc -', shell=True, input=self.stdout)
     # def showstderr(self):
     #     subprocess.run('vim -', shell=True, input=self.stderr)
     def summary(self):
-        return (self.statustext[self.status], self.cmd, self.createtime, self.runtime, self.finishtime)
+        return (self.statustext[self.status], self.pwd, self.cmd, self.createtime, self.runtime, self.finishtime, self.stdout)
     def shortsummary(self, maxlen=40):
         shortcmd="\n".join(chunks(self.cmd, maxlen))
-        return (self.statustext[self.status], shortcmd, self.createtime, self.runtime, self.finishtime)
+        shortpwd="\n".join(chunks(self.pwd, maxlen))
+        return (self.statustext[self.status], shortpwd, shortcmd, self.createtime, self.runtime, self.finishtime)
     def kill(self):
         if self.proc is not None:
             self.proc.kill()
@@ -149,7 +151,7 @@ while True:
         cmds=cmd.split(" ")
         if cmd=='!ls':
             print(tabulate([(k,*jobs[k].shortsummary()) for k in jobs], tablefmt="pretty",
-                headers=["ID","Status","Command","create","run","finished"]))
+                headers=["ID","status","pwd", "command","create","run","finished"]))
         elif cmds[0]=='!k':
             if len(cmds)==2 and cmds[1].isdigit():
                 jobs[int(cmds[1])].kill()
